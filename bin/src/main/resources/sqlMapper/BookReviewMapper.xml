@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.spring.library.dao.BookReviewDao">
+    
+    <insert id="insertBookReviewWrtie" parameterType="java.util.HashMap">
+    	INSERT INTO bookreview (isbn, bookName, bookIntro, bookImg, bookUrl, userSeq, bookRev)
+    	VALUES(#{isbn}, #{title}, #{bookIntro}, #{bookImg}, #{bookUrl}, #{userSeq}, #{bookRev})
+    </insert>
+    
+    <select id="selectBookReviewList" resultType="java.util.HashMap">
+    	SELECT b.reviewSeq,
+    		b.bookName,
+    		b.bookImg,
+    		b.enrollDate,
+    		u.userId
+    	FROM bookreview b, userinfo u
+    	WHERE b.userSeq = u.userSeq
+    	ORDER BY b.reviewSeq desc
+    </select>
+    
+    <select id="getMyPageReviewList" parameterType="String" resultType="java.util.HashMap">
+    	SELECT b.reviewSeq,
+    		b.bookName,
+    		b.bookImg,
+    		b.enrollDate,
+    		u.userId,
+    		(select count(*) from bookreview_like bi where bi.reviewSeq = b.reviewSeq) as cnt
+    	 FROM bookreview b, userinfo u
+    	WHERE b.userSeq = u.userSeq
+    	  AND b.userSeq = #{value}
+    	ORDER BY b.reviewSeq desc
+    </select>
+    
+    <select id="selectBookReviewDetail" parameterType="int" resultType="java.util.HashMap">
+    	SELECT r.reviewSeq, r.isbn, r.bookName, r.bookIntro, r.bookImg, r.bookUrl, r.userSeq, r.bookRev, r.enrollDate, u.userId
+    	FROM bookreview r, userinfo u
+    	WHERE r.userSeq = u.userSeq
+    	AND reviewSeq = #{reviewSeq}
+    </select>
+
+	<insert id="likeReview">
+		INSERT INTO bookreview_like ( reviewSeq, userId ) 
+			VALUES ( #{reviewSeq}, #{userId} )
+	</insert>
+	
+	<delete id="likeCancel">
+		DELETE FROM bookreview_like 
+		 WHERE reviewSeq = #{reviewSeq}
+		   AND userId = #{userId}
+	</delete>
+	
+	<select id="likeDtl" parameterType="java.util.HashMap" resultType="integer">
+		SELECT count(*) FROM bookreview_like 
+		 WHERE reviewSeq = #{reviewSeq}
+		   AND userId = #{userId}
+	</select>
+	
+</mapper>

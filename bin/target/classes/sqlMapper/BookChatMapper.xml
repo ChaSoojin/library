@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.spring.library.dao.BookChatDao">
+    
+	<select id="selectNonfaceDebateCollectList" resultType="java.util.HashMap">
+		SELECT n.debatecolSeq, n.debateTitle, n.fromDate, n.colPers, n.partPers, n.openDate, u.userId
+		FROM nonfacedebatecollect n, userinfo u
+		WHERE n.userSeq = u.userSeq
+		ORDER BY n.debatecolSeq DESC
+	</select>
+	
+	<select id="selectNonfaceDebateCollectDetail" resultType="java.util.HashMap" parameterType="int">
+		SELECT n.debatecolSeq, n.debateTitle, n.fromDate, n.colPers, n.partPers, n.openDate, n.debateCon, n.userSeq, u.userId
+		FROM nonfacedebatecollect n, userinfo u
+		WHERE n.userSeq = u.userSeq
+		AND n.debatecolSeq = #{no}
+	</select>
+	
+	<insert id="insertNonfaceDebateCollectWrite" parameterType="java.util.HashMap">
+		INSERT INTO nonfacedebatecollect(userSeq, debateTitle, fromDate, colPers, debateCon)
+		VALUES (#{userSeq}, #{debateTitle}, #{fromDate}, #{colPers}, #{debateCon})
+	</insert>
+	
+	<delete id="deleteNonfaceDebateCollectDelete" parameterType="int">
+		DELETE FROM nonfacedebatecollect
+		WHERE debatecolSeq = #{no}
+	</delete>
+	
+	<update id="updatePartPers" parameterType="java.util.HashMap">
+		UPDATE nonfacedebatecollect
+		SET partPers = partPers + 1
+		WHERE debatecolSeq = #{debateSeq}
+	</update>
+	
+	<insert id="insertNonfaceDebate" parameterType="java.util.HashMap">
+		INSERT INTO nonfacedebate (debatecolSeq, userSeq)
+		VALUES (#{debateSeq}, #{userSeq})
+	</insert>
+	
+	<select id="selectPartPers" parameterType="java.util.HashMap" resultType="int">
+		select partPers from nonfacedebatecollect
+		WHERE debatecolSeq = #{debateSeq}
+	</select>
+	
+	<select id="selectParticipationFlag" parameterType="int" resultType="int">
+		SELECT count(*) FROM nonfacedebate
+		WHERE debatecolSeq = #{no}
+		AND userSeq = #{userSeq}
+	</select>
+	
+	<update id="minusPartPers" parameterType="java.util.HashMap">
+		UPDATE nonfacedebatecollect
+		SET partPers = partPers - 1
+		WHERE debatecolSeq = #{debateSeq}
+	</update>
+	
+	<update id="updateStateOne" parameterType="java.util.HashMap">
+		UPDATE nonfacedebate
+		SET status = 1
+		WHERE debatecolSeq = #{debateSeq}
+		AND userSeq = #{userSeq}
+	</update>
+	
+	<update id="updateStateZero" parameterType="java.util.HashMap">
+		UPDATE nonfacedebate
+		SET status = 0
+		WHERE debatecolSeq = #{debateSeq}
+		AND userSeq = #{userSeq}
+	</update>
+     
+</mapper>

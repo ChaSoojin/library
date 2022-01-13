@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.spring.library.dao.UserDao">
+    
+	<insert id="joinUser" parameterType="java.util.HashMap">
+		INSERT INTO userinfo ( userId, userPw, userName, joinDate)
+		VALUES ( #{id}, #{password}, #{userName}, now())
+	</insert>
+	
+	<select id="userJoinIdCheck" parameterType="String" resultType="String">
+		SELECT userId FROM userinfo 
+		 WHERE userId = #{id}
+	</select>
+	
+	<select id="userLogin" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT userId, userSeq FROM userinfo 
+		 WHERE userId = #{id}
+		   AND userPw = #{password} 
+	</select>
+	
+	<select id="userList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT userId, userSeq, userName, userState, if(userState > 0 , '활동', '정지') as status FROM userinfo 
+	</select>
+	
+	<select id="bbsList" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+		SELECT * FROM (
+			SELECT debatecolSeq AS id, 
+				debateTitle AS title,
+				(SELECT userId FROM userinfo ui where ui.userSeq = A.userSeq) AS userId,
+				DATE_FORMAT(openDate, '%Y-%m-%d %H:%i:%s') AS createDate,
+				'nonfacedebatecollect' AS table_nm
+			 FROM nonfacedebatecollect A
+			UNION ALL
+			SELECT reviewSeq AS id,
+				bookName AS title,
+				(SELECT userId FROM userinfo ui where ui.userSeq = B.userSeq) AS userId,
+				DATE_FORMAT(enrollDate, '%Y-%m-%d %H:%i:%s') AS createDate,
+				'bookreview' AS table_nm
+			FROM bookreview B ) AA ORDER BY AA.createDate DESC
+	</select>
+     
+    <update id="userUpdate" parameterType="java.util.HashMap" >
+    	UPDATE userinfo SET userName = #{ userName }
+    	 WHERE userId = #{id}
+    	   AND userSeq = #{userId_seq}
+    	   AND userPw = #{password}
+    </update> 
+    
+    <update id="userPassWDupdate" parameterType="java.util.HashMap" >
+    	UPDATE userinfo SET userPw = #{ password_update }
+    	 WHERE userSeq = #{userId_seq}
+    	 <if test="password != 'admin'">
+    	   AND userPw = #{password}
+    	 </if>
+    </update>     
+    
+    <delete id="bookreviewRemove" parameterType="java.util.HashMap" >
+    	DELETE FROM bookreview WHERE reviewSeq = #{ board_id }
+    </delete>
+    
+    <delete id="nonfacedebatecollectRemove" parameterType="java.util.HashMap">
+   		DELETE FROM nonfacedebatecollect WHERE debatecolSeq = #{ board_id }
+    </delete>
+    
+    <select id="selectUserJoinData" resultType="java.util.HashMap">
+    SELECT
+	(SELECT COUNT(joindate) FROM userinfo WHERE DATE_FORMAT(joindate, "%Y-%m-%d") = CURDATE()) AS '0',
+	(SELECT COUNT(joindate) FROM userinfo WHERE DATE_FORMAT(joindate, "%Y-%m-%d") = date_add(curdate(), INTERVAL -1 day)) AS '1',
+	(SELECT COUNT(joindate) FROM userinfo WHERE DATE_FORMAT(joindate, "%Y-%m-%d") = date_add(curdate(), INTERVAL -2 day)) AS '2',
+	(SELECT COUNT(joindate) FROM userinfo WHERE DATE_FORMAT(joindate, "%Y-%m-%d") = date_add(curdate(), INTERVAL -3 day)) AS '3',
+	(SELECT COUNT(joindate) FROM userinfo WHERE DATE_FORMAT(joindate, "%Y-%m-%d") = date_add(curdate(), INTERVAL -4 day)) AS '4',
+	(SELECT COUNT(joindate) FROM userinfo WHERE DATE_FORMAT(joindate, "%Y-%m-%d") = date_add(curdate(), INTERVAL -5 DAY)) AS '5',
+	(SELECT COUNT(joindate) FROM userinfo WHERE DATE_FORMAT(joindate, "%Y-%m-%d") = date_add(curdate(), INTERVAL -6 DAY)) AS '6'
+    </select>
+    
+    <select id="selectReviewCnt" resultType="java.util.HashMap">
+    SELECT
+	(SELECT COUNT(enrollDate) FROM bookreview WHERE DATE_FORMAT(enrollDate, "%Y-%m-%d") = CURDATE()) AS '0',
+	(SELECT COUNT(enrollDate) FROM bookreview WHERE DATE_FORMAT(enrollDate, "%Y-%m-%d") = date_add(curdate(), INTERVAL -1 day)) AS '1',
+	(SELECT COUNT(enrollDate) FROM bookreview WHERE DATE_FORMAT(enrollDate, "%Y-%m-%d") = date_add(curdate(), INTERVAL -2 day)) AS '2',
+	(SELECT COUNT(enrollDate) FROM bookreview WHERE DATE_FORMAT(enrollDate, "%Y-%m-%d") = date_add(curdate(), INTERVAL -3 day)) AS '3',
+	(SELECT COUNT(enrollDate) FROM bookreview WHERE DATE_FORMAT(enrollDate, "%Y-%m-%d") = date_add(curdate(), INTERVAL -4 day)) AS '4',
+	(SELECT COUNT(enrollDate) FROM bookreview WHERE DATE_FORMAT(enrollDate, "%Y-%m-%d") = date_add(curdate(), INTERVAL -5 DAY)) AS '5',
+	(SELECT COUNT(enrollDate) FROM bookreview WHERE DATE_FORMAT(enrollDate, "%Y-%m-%d") = date_add(curdate(), INTERVAL -6 DAY)) AS '6'
+    </select>
+</mapper>
